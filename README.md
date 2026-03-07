@@ -1,12 +1,8 @@
-Below is a **cleaned version of your README** with **all emojis removed**, **unnecessary tables removed**, and **simplified formatting** while keeping the important information needed for the assignment.
-
----
-
 # DA6401 Assignment 1: Neural Network Implementation from Scratch
 
 ## Overview
 
-This assignment involves building a custom neural network from scratch (without TensorFlow or Keras) and conducting hyperparameter optimization experiments on the MNIST and Fashion-MNIST datasets.
+This assignment involves building a custom neural network from scratch (without TensorFlow) and conducting hyperparameter optimization experiments on the MNIST and Fashion-MNIST datasets.
 
 Project link:
 [https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1](https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1)
@@ -35,7 +31,7 @@ Adam with learning rate 0.001 is typically the most stable for this assignment.
 
 ## Weight Initialization Methods
 
-* Xavier (Glorot) initialization
+* Xavier initialization
 * Random initialization
 
 ---
@@ -51,7 +47,7 @@ Adam with learning rate 0.001 is typically the most stable for this assignment.
 * Number of classes: 10
 * Pixel values normalized to range [0,1]
 
-Typical accuracy: 93–99 percent.
+Typical accuracy: 93–97 percent.
 
 ## Fashion-MNIST Dataset
 
@@ -390,10 +386,7 @@ pip install -r requirements.txt
 
 # Author
 
-Student ID: zda23m016
+Student ID: GE26Z813
 Institute: IIT Madras
-Course: DA6401 – Advanced Deep Learning
+Course: DA6401 – Introduction to Deep Learning
 
----
-
-If you want, I can also **rewrite this README to be more “assignment-friendly” (what professors expect)** so it looks **more like a proper ML project report rather than a software README**. That usually helps in grading.
