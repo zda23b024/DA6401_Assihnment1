@@ -1,392 +1,107 @@
-# DA6401 Assignment 1: Neural Network Implementation from Scratch
+---
+
+# DA6401 Assignment 1
+
+Neural Network Implementation from Scratch
 
 ## Overview
 
-This assignment involves building a custom neural network from scratch (without TensorFlow) and conducting hyperparameter optimization experiments on the MNIST and Fashion-MNIST datasets.
+This project implements a fully connected neural network from scratch using **NumPy** without using deep learning frameworks such as TensorFlow or PyTorch. The model is trained on the **MNIST dataset** to perform handwritten digit classification.
 
-Project link:
-[https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1](https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1)
+The implementation includes forward propagation, backpropagation, weight updates, and evaluation. Experiments are tracked and analyzed using **Weights & Biases (W&B)**.
 
 ---
 
-# Model Architecture and Hyperparameters
+# Neural Network Implementation
 
-## Activations Implemented
+The neural network consists of:
 
-* ReLU – commonly used for deep networks
-* Sigmoid – classical activation but can suffer from vanishing gradients
-* Tanh – centered around zero
-* Softmax – used in the output layer for multi-class classification
+* Input layer with 784 features (28×28 flattened image)
+* One or more hidden layers
+* Output layer with 10 neurons representing the digit classes
 
-## Optimizers Implemented
+Activation functions supported:
 
-* SGD
-* Momentum
-* NAG
-* RMSProp
-* Adam
-* Nadam
+* ReLU
+* Sigmoid
+* Tanh
+* Softmax (output layer)
 
-Adam with learning rate 0.001 is typically the most stable for this assignment.
-
-## Weight Initialization Methods
+Weight initialization methods:
 
 * Xavier initialization
 * Random initialization
 
----
-
-# Dataset Information
-
-## MNIST Dataset
-
-* 60,000 training samples
-* 10,000 test samples
-* Image size: 28 × 28 grayscale
-* Input dimension after flattening: 784
-* Number of classes: 10
-* Pixel values normalized to range [0,1]
-
-Typical accuracy: 93–97 percent.
-
-## Fashion-MNIST Dataset
-
-* 60,000 training samples
-* 10,000 test samples
-* Image size: 28 × 28 grayscale
-* Input dimension after flattening: 784
-* Number of classes: 10 clothing categories
-
-Fashion-MNIST is more difficult than MNIST and usually gives lower accuracy.
+The network is trained using mini-batch gradient descent.
 
 ---
 
-# Default Training Parameters
+# Automation Using Weights & Biases
 
-```
-Input Size: 784
-Output Size: 10
-Hidden Layers: 2–3
-Neurons per Layer: 64–128
-Activation: ReLU (hidden layers), Softmax (output)
-Weight Initialization: Xavier
-Optimizer: Adam
-Learning Rate: 0.001
-Epochs: 20
-Batch Size: 32
-Validation Split: 20%
-```
+The experiments in this project are automated using **Weights & Biases (W&B) sweeps**.
+Sweeps allow multiple training runs with different hyperparameter configurations to be executed automatically.
 
----
+Instead of manually testing different configurations, the sweep system automatically runs experiments and records the results.
 
-# Hyperparameter Sweep Configuration
+The automated sweep explores combinations of:
 
-The sweep explores multiple combinations of hyperparameters.
+* Learning rate
+* Batch size
+* Number of hidden layers
+* Number of neurons per layer
+* Activation functions
+* Weight initialization methods
 
-Hidden layers: 1, 2, 3
-Neurons per layer: 32, 64, 128, 256
-Activation functions: relu, tanh, sigmoid
-Optimizers: sgd, adam, rmsprop
-Learning rates: 0.0001, 0.001, 0.01
-Batch sizes: 16, 32, 64
+Each run logs metrics such as:
 
-More than 100 runs are executed using Weights and Biases sweep.
+* Validation accuracy
+* Test accuracy
+* Training progress across epochs
+
+These results are visualized in the W&B dashboard, which helps identify the best performing hyperparameter configuration.
 
 ---
 
-# Project Structure
+# Running the Training Script
+
+From the project root directory:
 
 ```
-da6401_assignment_1/
-
-README.md
-requirements.txt
-
-src/
-    train.py
-    inference.py
-    config.json
-    best_model.npy
-
-    ann/
-        neural_network.py
-        neural_layer.py
-        activations.py
-        objective_functions.py
-        optimizers.py
-
-    utils/
-        data_loader.py
-
-    Report_files/
-        sweep_config.yaml
-        Data_Exploration.py
-        wandb_sweep_train.py
-        wandb_2_3_optimizer_showdown.py
-        Vanishes_Gradind_Analysis.py
-        wandb_2_5_dead_neurons.py
-        wandb_2_6_loss_comparison.py
-        wandb_2_7_global_performance.py
-        wandb_2_8_error_analysis.py
-        wandb_2_9_weight_symmetry.py
-        transfer_challenge_fashion_mnist.py
-```
-
----
-
-# Quick Start
-
-## Install Dependencies
-
-```
-cd da6401_assignment_1
-pip install -r requirements.txt
-```
-
-Required packages:
-
-* numpy
-* matplotlib
-* pandas
-* wandb
-* scikit-learn
-
----
-
-# Train the Model
-
-Basic training:
-
-```
-cd da6401_assignment_1
 python src/train.py
 ```
 
-Example output:
-
-```
-Loading MNIST dataset
-Training with 60000 samples
-
-Epoch 1/20
-Epoch 2/20
-...
-Epoch 20/20
-
-Model saved to src/best_model.npy
-```
-
-Training time is typically 5–10 minutes.
+This will train the neural network on the MNIST dataset and save the model weights.
 
 ---
 
-# Run Inference
+# Running Inference
 
 ```
-cd da6401_assignment_1
 python src/inference.py
 ```
 
-The script loads the trained model and evaluates it on test samples.
+This script loads the saved model and evaluates its performance on the test dataset.
 
 ---
 
-# Run Analysis Scripts
 
-Each assignment question corresponds to one script.
 
-Data exploration:
+# Experiment Tracking
 
-```
-cd src/Report_files
-python Data_Exploration.py
-```
+All experiments are automatically logged to Weights & Biases.
+The dashboard provides visualizations of training progress and hyperparameter performance.
 
-Optimizer comparison:
+Report link:
 
-```
-python wandb_2_3_optimizer_showdown.py
-```
-
-Vanishing gradient analysis:
-
-```
-python Vanishes_Gradind_Analysis.py
-```
-
-Dead neuron analysis:
-
-```
-python wandb_2_5_dead_neurons.py
-```
-
-Loss comparison:
-
-```
-python wandb_2_6_loss_comparison.py
-```
-
-Global performance evaluation:
-
-```
-python wandb_2_7_global_performance.py
-```
-
-Error analysis:
-
-```
-python wandb_2_8_error_analysis.py
-```
-
-Weight initialization comparison:
-
-```
-python wandb_2_9_weight_symmetry.py
-```
-
-Transfer challenge using Fashion-MNIST:
-
-```
-python transfer_challenge_fashion_mnist.py
-```
-
----
-
-# Hyperparameter Sweep
-
-Step 1: Initialize sweep
-
-```
-cd da6401_assignment_1
-wandb sweep src/Report_files/sweep_config.yaml
-```
-
-This command returns a sweep ID.
-
-Step 2: Run sweep agents
-
-```
-wandb agent zda23m016-iit-madras-zanzibar/da6401-assignment1/sweeps/<SWEEP_ID>
-```
-
-You can run multiple agents in parallel using different terminals.
-
-Expected time for 100 runs: about 1–4 hours depending on hardware.
-
----
-
-# W&B Dashboard
-
-Project link:
-
-[https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1](https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1)
-
-The dashboard includes:
-
-* Runs
-* Charts
-* Sweeps
-* Reports
-* Artifacts
-
-Metrics logged include training accuracy, validation accuracy, test accuracy, loss values, gradient norms, learning rate, batch size, activation function, optimizer, and weight initialization.
-
----
-
-# Expected Results
-
-For MNIST:
-
-Best configurations typically achieve 97–99 percent test accuracy using Adam optimizer and ReLU activation.
-
-For Fashion-MNIST:
-
-Best configurations typically achieve 88–91 percent test accuracy.
-
----
-
-# Key Findings
-
-Adam optimizer consistently performs well across different configurations.
-
-ReLU activation works better than sigmoid or tanh in deeper networks because it reduces vanishing gradient problems.
-
-Networks with 2–3 hidden layers and around 128 neurons per layer usually provide a good balance between performance and complexity.
-
-Batch size around 32 tends to give stable training.
-
-Fashion-MNIST is more complex than MNIST, so hyperparameters optimized for MNIST may not work equally well for Fashion-MNIST.
-
----
-
-# Troubleshooting
-
-Module import error:
-
-Always run scripts from the project root directory.
-
-```
-cd da6401_assignment_1
-python src/train.py
-```
-
-Missing model file:
-
-Train the model first before running inference.
-
-```
-python src/train.py
-python src/inference.py
-```
-
-W&B login required:
-
-```
-wandb login
-```
-
-Enter your API key from the W&B website.
-
----
-
-# Assignment Sections
-
-The assignment contains the following parts:
-
-Data exploration
-Hyperparameter sweep
-Optimizer comparison
-Vanishing gradient analysis
-Dead neuron analysis
-Loss comparison
-Global performance analysis
-Error analysis
-Weight initialization analysis
-Transfer learning experiment with Fashion-MNIST
-
----
-
-# Requirements
-
-```
-numpy
-matplotlib
-scikit-learn
-pandas
-wandb
-```
-
-Install with:
-
-```
-pip install -r requirements.txt
-```
+[https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1/reports](https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1/reports)
 
 ---
 
 # Author
 
-Student ID: GE26Z813
-Institute: IIT Madras
-Course: DA6401 – Introduction to Deep Learning
+Zakariya Yahya
+Student ID: Ge26z813
 
+---
+
+If you want, I can also give you a **slightly better academic version (still simple)** that **looks more professional for GitHub submission and grading**.
