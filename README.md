@@ -1,107 +1,52 @@
----
-
-# DA6401 Assignment 1
-
-Neural Network Implementation from Scratch
+# Assignment 1: Multi-Layer Perceptron for Image Classification
 
 ## Overview
 
-This project implements a fully connected neural network from scratch using **NumPy** without using deep learning frameworks such as TensorFlow or PyTorch. The model is trained on the **MNIST dataset** to perform handwritten digit classification.
+This assignment requires you to implement a neural network from scratch using only NumPy. You will build all components including layers, activations, optimizers, and loss functions, then train your network on MNIST or Fashion-MNIST datasets.
 
-The implementation includes forward propagation, backpropagation, weight updates, and evaluation. Experiments are tracked and analyzed using **Weights & Biases (W&B)**.
+## Learning Objectives
 
----
+- Understand forward and backward propagation
+- Implement gradient computation manually
+- Implement various optimizers (SGD, Momentum, Adam, Nadam)
+- Work with activation functions and their derivatives
+- Train and evaluate neural networks
+- Log experiments using Weights & Biases
 
-# Neural Network Implementation
+## Installation
 
-The neural network consists of:
-
-* Input layer with 784 features (28×28 flattened image)
-* One or more hidden layers
-* Output layer with 10 neurons representing the digit classes
-
-Activation functions supported:
-
-* ReLU
-* Sigmoid
-* Tanh
-* Softmax (output layer)
-
-Weight initialization methods:
-
-* Xavier initialization
-* Random initialization
-
-The network is trained using mini-batch gradient descent.
-
----
-
-# Automation Using Weights & Biases
-
-The experiments in this project are automated using **Weights & Biases (W&B) sweeps**.
-Sweeps allow multiple training runs with different hyperparameter configurations to be executed automatically.
-
-Instead of manually testing different configurations, the sweep system automatically runs experiments and records the results.
-
-The automated sweep explores combinations of:
-
-* Learning rate
-* Batch size
-* Number of hidden layers
-* Number of neurons per layer
-* Activation functions
-* Weight initialization methods
-
-Each run logs metrics such as:
-
-* Validation accuracy
-* Test accuracy
-* Training progress across epochs
-
-These results are visualized in the W&B dashboard, which helps identify the best performing hyperparameter configuration.
-
----
-
-# Running the Training Script
-
-From the project root directory:
-
-```
-python src/train.py
+To install the required dependencies, run:
+```bash
+pip install -r requirements.txt
 ```
 
-This will train the neural network on the MNIST dataset and save the model weights.
+## Train Model
 
----
-
-# Running Inference
-
-```
-python src/inference.py
+To train the model, navigate to the `src` directory and run:
+```bash
+python train.py --dataset mnist --epochs 10 --batch_size 32 --learning_rate 0.001
 ```
 
-This script loads the saved model and evaluates its performance on the test dataset.
+### Example:
+```bash
+python train.py --dataset fashion_mnist --epochs 20 --batch_size 64 --learning_rate 0.0005
+```
 
----
+## Run Inference
 
+To evaluate the trained model, run:
+```bash
+python inference.py --model_path best_model.npy --dataset mnist
+```
 
+### Example:
+```bash
+python inference.py --model_path best_model.npy --dataset fashion_mnist
+```
 
-# Experiment Tracking
+## Files
 
-All experiments are automatically logged to Weights & Biases.
-The dashboard provides visualizations of training progress and hyperparameter performance.
-
-Report link:
-
-[https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1/reports](https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1/reports)
-
----
-
-# Author
-
-Zakariya Yahya
-Student ID: Ge26z813
-
----
-
-If you want, I can also give you a **slightly better academic version (still simple)** that **looks more professional for GitHub submission and grading**.
+- **train.py**: Training script for the neural network.
+- **inference.py**: Script for evaluating the trained model.
+- **best_model.npy**: Saved weights of the best-performing model.
+- **best_config.json**: Hyperparameters of the best model.
