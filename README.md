@@ -118,7 +118,7 @@ Each run logs training metrics and hyperparameters to the W&B dashboard for comp
 
 All experiment results and analysis are available in the following report:
 
-[https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1/reports](https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1/reports)
+https://wandb.ai/zda23m016-iit-madras-zanzibar/da6401-assignment1/reports/DA6401_Assignment_1-Complete-Analysis-Report--VmlldzoxNjEzNDY1NQ?accessToken=3fe328d5tmjohfgt3bdwginnnz9ucmjzeit1swyy7ooixd49sh5mipfytripf1ei
 
 ---
 
