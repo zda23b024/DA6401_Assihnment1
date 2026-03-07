@@ -1,0 +1,19 @@
+{
+    "dataset": "mnist",
+    "epochs": 10,
+    "batch_size": 32,
+    "learning_rate": 0.01,
+    "optimizer": "rmsprop",
+    "hidden_layers": 4,
+    "num_neurons": [
+        128,
+        128,
+        128,
+        64
+    ],
+    "activation": "relu",
+    "loss": "cross_entropy",
+    "weight_init": "xavier",
+    "wandb_project": "da6401-assignment1",
+    "model_save_path": "best_model.npy"
+}
