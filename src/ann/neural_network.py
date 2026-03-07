@@ -18,7 +18,7 @@ class NeuralNetwork:
         Initialize neural network layers based on CLI arguments
         """
 
-        # SAFE DEFAULTS for Gradescope tests
+        # Safe defaults for Gradescope tests
         self.input_size = cli_args.input_size if hasattr(cli_args, "input_size") else 784
         self.output_size = 10
 
@@ -49,7 +49,7 @@ class NeuralNetwork:
             )
             prev_size = num_neurons
 
-        # output layer (softmax for multi-class classification)
+        # output layer
         self.layers.append(
             NeuralLayer(
                 prev_size,
@@ -62,7 +62,6 @@ class NeuralNetwork:
     def forward(self, X):
         """
         Forward propagation through all layers.
-        Returns logits (no softmax applied)
         """
         out = X
         for layer in self.layers:
@@ -74,23 +73,25 @@ class NeuralNetwork:
         Backward propagation to compute gradients.
         Returns grad_Ws, grad_bs arrays
         """
+
         grad_W_list = []
         grad_b_list = []
 
-        # derivative of loss w.r.t logits
+        # ensure y_true is one-hot
+        if y_true.ndim == 1 or y_true.shape[1] != y_pred.shape[1]:
+            y_onehot = np.zeros_like(y_pred)
+            y_onehot[np.arange(y_true.shape[0]), y_true.flatten()] = 1
+            y_true = y_onehot
+
+        # derivative of cross entropy with softmax
         dA = y_pred - y_true
 
-        # backprop through layers in reverse
+        # backprop through layers
         for layer in reversed(self.layers):
             dA = layer.backward(dA)
-            grad_W_list.append(layer.grad_W.copy())
-            grad_b_list.append(layer.grad_b.copy())
+            grad_W_list.insert(0, layer.grad_W.copy())
+            grad_b_list.insert(0, layer.grad_b.copy())
 
-        # reverse order
-        grad_W_list = grad_W_list[::-1]
-        grad_b_list = grad_b_list[::-1]
-
-        # store explicitly
         self.grad_W = np.empty(len(grad_W_list), dtype=object)
         self.grad_b = np.empty(len(grad_b_list), dtype=object)
 
@@ -108,10 +109,12 @@ class NeuralNetwork:
             layer.W -= learning_rate * gw
             layer.b -= learning_rate * gb
 
-    def train(self, X_train, y_train, epochs=1, batch_size=32, learning_rate=0.001, X_val=None, y_val=None, wandb_log=True):
+    def train(self, X_train, y_train, epochs=1, batch_size=32, learning_rate=0.001,
+              X_val=None, y_val=None, wandb_log=True):
         """
         Basic training loop (mini-batch SGD)
         """
+
         n_samples = X_train.shape[0]
 
         for epoch in range(epochs):
@@ -134,7 +137,6 @@ class NeuralNetwork:
                 # update
                 self.update_weights(learning_rate)
 
-            # validation evaluation
             if X_val is not None and y_val is not None:
                 acc = self.evaluate(X_val, y_val)
 
@@ -148,27 +150,40 @@ class NeuralNetwork:
         """
         Compute accuracy
         """
+
         y_pred = self.forward(X)
+
+        if y.ndim == 1:
+            y_true_labels = y
+        else:
+            y_true_labels = np.argmax(y, axis=1)
+
         y_pred_labels = np.argmax(y_pred, axis=1)
-        y_true_labels = np.argmax(y, axis=1)
+
         accuracy = np.mean(y_pred_labels == y_true_labels)
+
         return accuracy
 
     def get_weights(self):
         """
         Return dictionary of layer weights
         """
+
         d = {}
+
         for i, layer in enumerate(self.layers):
             d[f"W{i}"] = layer.W.copy()
             d[f"b{i}"] = layer.b.copy()
+
         return d
 
     def set_weights(self, weight_dict):
         """
         Load dictionary of weights
         """
+
         for i, layer in enumerate(self.layers):
+
             w_key = f"W{i}"
             b_key = f"b{i}"
 
