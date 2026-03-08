@@ -20,10 +20,7 @@ class NeuralNetwork:
 
         # SAFE DEFAULTS for Gradescope
         self.input_size = cli_args.input_size if hasattr(cli_args, "input_size") else 784
-
-        # allow flexible output size (Gradescope sometimes uses 2)
         self.output_size = cli_args.output_size if hasattr(cli_args, "output_size") else 10
-
         self.hidden_layers = cli_args.hidden_layers if hasattr(cli_args, "hidden_layers") else 1
 
         if hasattr(cli_args, "num_neurons"):
@@ -33,6 +30,10 @@ class NeuralNetwork:
         else:
             self.num_neurons = [128]
 
+        # FIX: ensure num_neurons length matches hidden_layers
+        if len(self.num_neurons) < self.hidden_layers:
+            self.num_neurons = self.num_neurons * self.hidden_layers
+
         self.activation = cli_args.activation if hasattr(cli_args, "activation") else "relu"
         self.weight_init = cli_args.weight_init if hasattr(cli_args, "weight_init") else "xavier"
 
@@ -40,7 +41,7 @@ class NeuralNetwork:
         self.layers = []
 
         prev_size = self.input_size
-        for num_neurons in self.num_neurons:
+        for num_neurons in self.num_neurons[:self.hidden_layers]:
             self.layers.append(
                 NeuralLayer(
                     prev_size,
@@ -114,7 +115,8 @@ class NeuralNetwork:
             layer.W -= learning_rate * gw
             layer.b -= learning_rate * gb
 
-    def train(self, X_train, y_train, epochs=1, batch_size=32, learning_rate=0.001, X_val=None, y_val=None, wandb_log=True):
+    def train(self, X_train, y_train, epochs=1, batch_size=32, learning_rate=0.001,
+              X_val=None, y_val=None, wandb_log=True):
         """
         Basic training loop (mini-batch SGD)
         """
@@ -135,6 +137,19 @@ class NeuralNetwork:
                 # forward
                 y_pred = self.forward(X_batch)
 
+                # FIX: numerical stability
+                y_pred = np.clip(y_pred, 1e-9, 1 - 1e-9)
+
+                # compute loss
+                if y_batch.ndim == 1:
+                    y_onehot = np.zeros((y_batch.shape[0], y_pred.shape[1]))
+                    y_onehot[np.arange(y_batch.shape[0]), y_batch] = 1
+                    y_batch_onehot = y_onehot
+                else:
+                    y_batch_onehot = y_batch
+
+                loss = -np.mean(np.sum(y_batch_onehot * np.log(y_pred), axis=1))
+
                 # backward
                 self.backward(y_batch, y_pred)
 
@@ -142,11 +157,18 @@ class NeuralNetwork:
                 self.update_weights(learning_rate)
 
             if X_val is not None and y_val is not None:
+
                 acc = self.evaluate(X_val, y_val)
+                train_acc = self.evaluate(X_train[:1000], y_train[:1000])
 
                 if wandb_log:
                     import wandb
-                    wandb.log({"epoch": epoch, "val_accuracy": acc})
+                    wandb.log({
+                        "epoch": epoch,
+                        "val_accuracy": acc,
+                        "train_accuracy": train_acc,
+                        "train_loss": loss
+                    })
 
                 print(f"Epoch {epoch+1}/{epochs}, Val Accuracy: {acc:.4f}")
 
