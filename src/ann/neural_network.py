@@ -232,8 +232,19 @@ class NeuralNetwork:
             w_key = f"W{i}"
             b_key = f"b{i}"
 
-            if w_key in weight_dict:
-                layer.W = weight_dict[w_key].copy()
+           def set_weights(self, weight_dict):
 
-            if b_key in weight_dict:
-                layer.b = weight_dict[b_key].copy()
+    for i, layer in enumerate(self.layers):
+
+        w_key = f"W{i}"
+        b_key = f"b{i}"
+
+        if w_key in weight_dict:
+            layer.W = weight_dict[w_key].copy()
+
+            # update layer sizes to match loaded weights
+            layer.input_size = layer.W.shape[0]
+            layer.output_size = layer.W.shape[1]
+
+        if b_key in weight_dict:
+            layer.b = weight_dict[b_key].copy()
