@@ -4,8 +4,8 @@ Handles forward and backward propagation loops
 """
 
 import numpy as np
-from ann.neural_layer import NeuralLayer
-from ann import activations
+from .neural_layer import NeuralLayer
+from . import activations
 
 
 class NeuralNetwork:
