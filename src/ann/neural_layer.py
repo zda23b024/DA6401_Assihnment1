@@ -19,10 +19,9 @@ class NeuralLayer:
         # Weight Initialization
         # -----------------------
         if weight_init == 'xavier':
-            limit = np.sqrt(6 / (input_size + output_size))
-            self.W = np.random.uniform(-limit, limit, (input_size, output_size))
+           self.W = np.random.randn(input_size, output_size) * np.sqrt(1.0 / input_size)
         else:
-            self.W = np.random.randn(input_size, output_size) * 0.01
+           self.W = np.random.randn(input_size, output_size) * 0.01
 
         self.b = np.zeros((1, output_size))
 
