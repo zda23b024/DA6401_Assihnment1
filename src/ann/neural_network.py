@@ -17,7 +17,7 @@ class NeuralNetwork:
 
         # SAFE DEFAULTS for Gradescope
         self.input_size = cli_args.input_size if hasattr(cli_args, "input_size") else 784
-        self.output_size = cli_args.output_size
+        self.output_size = getattr(cli_args, "output_size", 10)
         self.hidden_layers = cli_args.hidden_layers if hasattr(cli_args, "hidden_layers") else 1
 
         if hasattr(cli_args, "num_neurons"):
