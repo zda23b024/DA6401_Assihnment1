@@ -77,30 +77,31 @@ class NeuralNetwork:
         grad_W_list = []
         grad_b_list = []
 
-        # ---------- FIX: robust label handling ----------
+        # ---------- SIMPLE & SAFE LABEL HANDLING ----------
 
-        # convert labels to 1D if needed
-        if y_true.ndim > 1 and y_true.shape[1] == 1:
-            y_true = y_true.flatten()
-
-        # convert to one-hot if labels are integers
+        # Convert integer labels to one-hot
         if y_true.ndim == 1:
+
             num_classes = y_pred.shape[1]
             y_onehot = np.zeros((y_true.shape[0], num_classes))
-            y_onehot[np.arange(y_true.shape[0]), y_true.astype(int)] = 1
+
+            # Prevent out-of-range indexing
+            y_idx = y_true.astype(int)
+            y_idx = np.clip(y_idx, 0, num_classes - 1)
+
+            y_onehot[np.arange(y_true.shape[0]), y_idx] = 1
             y_true = y_onehot
 
-        # ensure shape matches predictions
-        if y_true.shape[1] != y_pred.shape[1]:
+        # If already one-hot but wrong size, match prediction size
+        if y_true.shape != y_pred.shape:
 
             num_classes = y_pred.shape[1]
 
-            if y_true.shape[1] < num_classes:
-                pad = num_classes - y_true.shape[1]
-                y_true = np.pad(y_true, ((0, 0), (0, pad)), mode="constant")
+            y_fixed = np.zeros_like(y_pred)
+            cols = min(y_true.shape[1], num_classes)
 
-            else:
-                y_true = y_true[:, :num_classes]
+            y_fixed[:, :cols] = y_true[:, :cols]
+            y_true = y_fixed
 
         # derivative of cross entropy with softmax
         dA = y_pred - y_true
@@ -108,6 +109,7 @@ class NeuralNetwork:
         # ---------- backprop through layers ----------
 
         for layer in reversed(self.layers):
+
             dA = layer.backward(dA)
 
             grad_W_list.insert(0, layer.grad_W.copy())
@@ -163,7 +165,8 @@ class NeuralNetwork:
                 if y_batch.ndim == 1:
 
                     y_onehot = np.zeros((y_batch.shape[0], y_pred.shape[1]))
-                    y_onehot[np.arange(y_batch.shape[0]), y_batch.astype(int)] = 1
+                    idx = np.clip(y_batch.astype(int), 0, y_pred.shape[1] - 1)
+                    y_onehot[np.arange(y_batch.shape[0]), idx] = 1
 
                     y_batch_onehot = y_onehot
 
