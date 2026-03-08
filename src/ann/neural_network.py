@@ -14,9 +14,6 @@ class NeuralNetwork:
     """
 
     def __init__(self, cli_args):
-        """
-        Initialize neural network layers based on CLI arguments
-        """
 
         # SAFE DEFAULTS for Gradescope
         self.input_size = cli_args.input_size if hasattr(cli_args, "input_size") else 784
@@ -30,7 +27,7 @@ class NeuralNetwork:
         else:
             self.num_neurons = [128]
 
-        # FIX: ensure num_neurons length matches hidden_layers
+        # ensure neuron list length matches hidden layers
         if len(self.num_neurons) < self.hidden_layers:
             self.num_neurons = self.num_neurons * self.hidden_layers
 
@@ -41,6 +38,7 @@ class NeuralNetwork:
         self.layers = []
 
         prev_size = self.input_size
+
         for num_neurons in self.num_neurons[:self.hidden_layers]:
             self.layers.append(
                 NeuralLayer(
@@ -57,7 +55,7 @@ class NeuralNetwork:
             NeuralLayer(
                 prev_size,
                 self.output_size,
-                activation='softmax',
+                activation="softmax",
                 weight_init=self.weight_init
             )
         )
@@ -74,52 +72,73 @@ class NeuralNetwork:
     def backward(self, y_true, y_pred):
         """
         Backward propagation to compute gradients.
-        Returns grad_Ws, grad_bs arrays
         """
 
         grad_W_list = []
         grad_b_list = []
 
-        # ensure labels match prediction shape
+        # ---------- FIX: robust label handling ----------
+
+        # convert labels to 1D if needed
+        if y_true.ndim > 1 and y_true.shape[1] == 1:
+            y_true = y_true.flatten()
+
+        # convert to one-hot if labels are integers
         if y_true.ndim == 1:
-            y_onehot = np.zeros((y_true.shape[0], y_pred.shape[1]))
-            y_onehot[np.arange(y_true.shape[0]), y_true] = 1
+            num_classes = y_pred.shape[1]
+            y_onehot = np.zeros((y_true.shape[0], num_classes))
+            y_onehot[np.arange(y_true.shape[0]), y_true.astype(int)] = 1
             y_true = y_onehot
 
-        elif y_true.shape[1] != y_pred.shape[1]:
-            y_true = y_true[:, :y_pred.shape[1]]
+        # ensure shape matches predictions
+        if y_true.shape[1] != y_pred.shape[1]:
+
+            num_classes = y_pred.shape[1]
+
+            if y_true.shape[1] < num_classes:
+                pad = num_classes - y_true.shape[1]
+                y_true = np.pad(y_true, ((0, 0), (0, pad)), mode="constant")
+
+            else:
+                y_true = y_true[:, :num_classes]
 
         # derivative of cross entropy with softmax
         dA = y_pred - y_true
 
-        # backprop through layers
+        # ---------- backprop through layers ----------
+
         for layer in reversed(self.layers):
             dA = layer.backward(dA)
+
             grad_W_list.insert(0, layer.grad_W.copy())
             grad_b_list.insert(0, layer.grad_b.copy())
 
         self.grad_W = np.empty(len(grad_W_list), dtype=object)
         self.grad_b = np.empty(len(grad_b_list), dtype=object)
 
-        for i, (gw, gb) in enumerate(zip(grad_W_list, grad_b_list)):
-            self.grad_W[i] = gw
-            self.grad_b[i] = gb
+        for i in range(len(grad_W_list)):
+            self.grad_W[i] = grad_W_list[i]
+            self.grad_b[i] = grad_b_list[i]
 
         return self.grad_W, self.grad_b
 
     def update_weights(self, learning_rate=0.001):
-        """
-        Simple SGD weight update
-        """
+
         for layer, gw, gb in zip(self.layers, self.grad_W, self.grad_b):
             layer.W -= learning_rate * gw
             layer.b -= learning_rate * gb
 
-    def train(self, X_train, y_train, epochs=1, batch_size=32, learning_rate=0.001,
-              X_val=None, y_val=None, wandb_log=True):
-        """
-        Basic training loop (mini-batch SGD)
-        """
+    def train(
+        self,
+        X_train,
+        y_train,
+        epochs=1,
+        batch_size=32,
+        learning_rate=0.001,
+        X_val=None,
+        y_val=None,
+        wandb_log=True,
+    ):
 
         n_samples = X_train.shape[0]
 
@@ -131,20 +150,23 @@ class NeuralNetwork:
 
             for i in range(0, n_samples, batch_size):
 
-                X_batch = X_train[i:i+batch_size]
-                y_batch = y_train[i:i+batch_size]
+                X_batch = X_train[i : i + batch_size]
+                y_batch = y_train[i : i + batch_size]
 
                 # forward
                 y_pred = self.forward(X_batch)
 
-                # FIX: numerical stability
+                # numerical stability
                 y_pred = np.clip(y_pred, 1e-9, 1 - 1e-9)
 
                 # compute loss
                 if y_batch.ndim == 1:
+
                     y_onehot = np.zeros((y_batch.shape[0], y_pred.shape[1]))
-                    y_onehot[np.arange(y_batch.shape[0]), y_batch] = 1
+                    y_onehot[np.arange(y_batch.shape[0]), y_batch.astype(int)] = 1
+
                     y_batch_onehot = y_onehot
+
                 else:
                     y_batch_onehot = y_batch
 
@@ -163,19 +185,19 @@ class NeuralNetwork:
 
                 if wandb_log:
                     import wandb
-                    wandb.log({
-                        "epoch": epoch,
-                        "val_accuracy": acc,
-                        "train_accuracy": train_acc,
-                        "train_loss": loss
-                    })
+
+                    wandb.log(
+                        {
+                            "epoch": epoch,
+                            "val_accuracy": acc,
+                            "train_accuracy": train_acc,
+                            "train_loss": loss,
+                        }
+                    )
 
                 print(f"Epoch {epoch+1}/{epochs}, Val Accuracy: {acc:.4f}")
 
     def evaluate(self, X, y):
-        """
-        Compute accuracy
-        """
 
         y_pred = self.forward(X)
 
@@ -191,9 +213,6 @@ class NeuralNetwork:
         return accuracy
 
     def get_weights(self):
-        """
-        Return dictionary of layer weights
-        """
 
         d = {}
 
@@ -204,9 +223,6 @@ class NeuralNetwork:
         return d
 
     def set_weights(self, weight_dict):
-        """
-        Load dictionary of weights
-        """
 
         for i, layer in enumerate(self.layers):
 
