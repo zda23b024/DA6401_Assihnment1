@@ -59,12 +59,26 @@ def load_model(model_path, config_path):
 
 
 def evaluate_model(model, X_test, y_test):
+    # - uint8 [0,255] inputs or float inputs in [0,1]
+    X_test = np.asarray(X_test)
+    if X_test.ndim > 2:
+        X_test = X_test.reshape(X_test.shape[0], -1)
+    X_test = X_test.astype(np.float32)
+    if np.max(X_test) > 1.0:
+        X_test = X_test / 255.0
+
+    y_test = np.asarray(y_test)
+    if y_test.ndim > 1:
+        y_test_labels = np.argmax(y_test, axis=1)
+    else:
+        y_test_labels = y_test.astype(int)
+        
     logits = model.forward(X_test)
     probs = activations.softmax(logits)
     preds = np.argmax(probs, axis=1)
     
     # Convert y_test from one-hot encoding to class indices
-    y_test_labels = np.argmax(y_test, axis=1)
+    #y_test_labels = np.argmax(y_test, axis=1)
 
     # Calculate metrics
     accuracy = accuracy_score(y_test_labels, preds)
