@@ -22,12 +22,23 @@ class NeuralNetwork:
         
         
         self.num_neurons = getattr(cli_args, "num_neurons", [128, 128, 128, 64])
+        if isinstance(self.num_neurons, int):
+            self.num_neurons = [self.num_neurons]
+            
         self.hidden_layers = getattr(cli_args, "hidden_layers", len(self.num_neurons))
+        self.num_neurons = list(self.num_neurons[:self.hidden_layers])
         self.activation = getattr(cli_args, "activation", "relu")
         self.weight_init = getattr(cli_args, "weight_init", "xavier")
 
         # build layer list
         self.layers = []
+        self._build_layers(self.input_size)
+
+    def _build_layers(self, input_size):
+        """Build network layers for a given input size."""
+        self.layers = []
+        
+        
 
         prev_size = self.input_size
         for num_neurons in self.num_neurons:
@@ -38,12 +49,23 @@ class NeuralNetwork:
         # output layer (softmax for multi-class classification)
         self.layers.append(NeuralLayer(prev_size, self.output_size, activation='softmax',
                                        weight_init=self.weight_init))
+        self.layers.append(
+                NeuralLayer(prev_size, num_neurons, activation=self.activation, weight_init=self.weight_init)
+            )
+        self.input_size = input_size
 
     def forward(self, X):
         """
         Forward propagation through all layers.
         Returns logits (no softmax applied)
         """
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
+
+        # adapt only when input size is inconsistent with the configured model
+        if len(self.layers) > 0 and X.shape[1] != self.layers[0].input_size:
+            self._build_layers(X.shape[1])
+        
         out = X
         for layer in self.layers:
             out = layer.forward(out)
