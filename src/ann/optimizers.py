@@ -4,7 +4,6 @@ Implements: SGD, Momentum, NAG, RMSProp, Adam, Nadam
 """
 
 import numpy as np
-from src.ann.optimizers import * 
 
 class Optimizer:
     """
