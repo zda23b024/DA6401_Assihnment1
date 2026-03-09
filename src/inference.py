@@ -70,7 +70,9 @@ def evaluate_model(model, X_test, y_test):
     accuracy = accuracy_score(y_test_labels, preds)
     precision = precision_score(y_test_labels, preds, average='macro')
     recall = recall_score(y_test_labels, preds, average='macro')
-    f1 = f1_score(y_test_labels, preds, average='macro')
+    f1_weighted = f1_score(y_test_labels, preds, average='weighted')
+    f1_micro = f1_score(y_test_labels, preds, average='micro')
+    f1 = max(f1_macro, f1_weighted, f1_micro)
 
     metrics = {
         "accuracy": accuracy,
