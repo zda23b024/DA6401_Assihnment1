@@ -4,10 +4,7 @@ Handles weight initialization, forward pass, and gradient computation
 """
 
 import numpy as np
-from . import activations
-from src.ann.neural_layer import NeuralLayer
-
-__all__ = ["NeuralLayer"]
+from ann import activations
 
 
 class NeuralLayer:
@@ -22,9 +19,10 @@ class NeuralLayer:
         # Weight Initialization
         # -----------------------
         if weight_init == 'xavier':
-           self.W = np.random.randn(input_size, output_size) * np.sqrt(1.0 / input_size)
+            limit = np.sqrt(6 / (input_size + output_size))
+            self.W = np.random.uniform(-limit, limit, (input_size, output_size))
         else:
-           self.W = np.random.randn(input_size, output_size) * 0.01
+            self.W = np.random.randn(input_size, output_size) * 0.01
 
         self.b = np.zeros((1, output_size))
 
