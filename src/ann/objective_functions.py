@@ -4,7 +4,6 @@ Implements: Cross-Entropy, Mean Squared Error (MSE)
 """
 
 import numpy as np
-from src.ann.objective_functions import * 
 
 
 def cross_entropy_loss(y_true, y_pred):
