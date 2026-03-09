@@ -30,28 +30,25 @@ class NeuralNetwork:
         self.activation = getattr(cli_args, "activation", "relu")
         self.weight_init = getattr(cli_args, "weight_init", "xavier")
 
-        # build layer list
         self.layers = []
         self._build_layers(self.input_size)
 
     def _build_layers(self, input_size):
         """Build network layers for a given input size."""
         self.layers = []
-        
-        
-
-        prev_size = self.input_size
+        prev_size = input_size
+     
         for num_neurons in self.num_neurons:
-            self.layers.append(NeuralLayer(prev_size, num_neurons, activation=self.activation,
-                                           weight_init=self.weight_init))
-            prev_size = num_neurons
 
         # output layer (softmax for multi-class classification)
-        self.layers.append(NeuralLayer(prev_size, self.output_size, activation='softmax',
-                                       weight_init=self.weight_init))
         self.layers.append(
                 NeuralLayer(prev_size, num_neurons, activation=self.activation, weight_init=self.weight_init)
             )
+        prev_size = num_neurons
+        
+        self.layers.append(
+            NeuralLayer(prev_size, self.output_size, activation='softmax', weight_init=self.weight_init)
+        )
         self.input_size = input_size
 
     def forward(self, X):
