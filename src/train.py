@@ -46,13 +46,15 @@ def parse_arguments():
                         choices=['sgd', 'momentum', 'nag', 'rmsprop', 'adam', 'nadam'],
                         help='Optimizer')
 
-    parser.add_argument('--hidden_layers',
+    parser.add_argument('--hidden_layers', '--num_layers',
+                        dest='hidden_layers'
                         type=int,
                         default=4,
                         help='Number of hidden layers')
 
     # <-- accept a space-separated list of neurons per layer
-    parser.add_argument('--num_neurons',
+    parser.add_argument('--num_neurons', '--hidden_size',
+                        dest='num_neurons',
                         type=int,
                         nargs='+',
                         required=True,
