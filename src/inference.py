@@ -16,8 +16,9 @@ from utils.data_loader import load_dataset
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Inference")
 
-    parser.add_argument("--model_path", type=str, required=True, help="Path to the saved model (.npy)")
-    parser.add_argument("--config_path", type=str, required=True, help="Path to the config file (.json)")
+    parser.add_argument("--model_path", type=str, default="best_model.npy", help="Path to the saved model (.npy)")
+    parser.add_argument("--config_path", type=str, default="config.json", help="Path to the config file (.json)")
+
 
     return parser.parse_args()
 
