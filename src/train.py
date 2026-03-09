@@ -47,7 +47,7 @@ def parse_arguments():
                         help='Optimizer')
 
     parser.add_argument('--hidden_layers', '--num_layers',
-                        dest='hidden_layers'
+                        dest='hidden_layers',
                         type=int,
                         default=4,
                         help='Number of hidden layers')
