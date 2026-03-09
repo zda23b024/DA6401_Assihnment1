@@ -19,10 +19,12 @@ class NeuralNetwork:
         """
         self.input_size = cli_args.input_size if hasattr(cli_args, "input_size") else 784
         self.output_size = 10
-        self.hidden_layers = cli_args.hidden_layers
-        self.num_neurons = cli_args.num_neurons
-        self.activation = cli_args.activation
-        self.weight_init = cli_args.weight_init
+        
+        
+        self.num_neurons = getattr(cli_args, "num_neurons", [128, 128, 128, 64])
+        self.hidden_layers = getattr(cli_args, "hidden_layers", len(self.num_neurons))
+        self.activation = getattr(cli_args, "activation", "relu")
+        self.weight_init = getattr(cli_args, "weight_init", "xavier")
 
         # build layer list
         self.layers = []
