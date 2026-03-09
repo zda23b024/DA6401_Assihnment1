@@ -6,6 +6,8 @@ Handles forward and backward propagation loops
 import numpy as np
 from ann.neural_layer import NeuralLayer
 from ann import activations
+from ann.optimizers import SGD, Momentum, NAG, RMSProp, Adam, Nadam
+
 
 
 class NeuralNetwork:
@@ -29,9 +31,28 @@ class NeuralNetwork:
         self.num_neurons = list(self.num_neurons[:self.hidden_layers])
         self.activation = getattr(cli_args, "activation", "relu")
         self.weight_init = getattr(cli_args, "weight_init", "xavier")
+        self.optimizer_name = getattr(cli_args, "optimizer", "sgd").lower()
+        self.learning_rate = getattr(cli_args, "learning_rate", 0.001)
 
         self.layers = []
         self._build_layers(self.input_size)
+        self.optimizer = self._build_optimizer()
+
+    def _build_optimizer(self):
+        """Create optimizer instance from CLI args."""
+        if self.optimizer_name == "sgd":
+            return SGD(lr=self.learning_rate)
+        if self.optimizer_name == "momentum":
+            return Momentum(lr=self.learning_rate)
+        if self.optimizer_name == "nag":
+            return NAG(lr=self.learning_rate)
+        if self.optimizer_name == "rmsprop":
+            return RMSProp(lr=self.learning_rate)
+        if self.optimizer_name == "adam":
+            return Adam(lr=self.learning_rate)
+        if self.optimizer_name == "nadam":
+            return Nadam(lr=self.learning_rate)
+        return SGD(lr=self.learning_rate)
 
     def _build_layers(self, input_size):
         """Build network layers for a given input size."""
@@ -100,11 +121,13 @@ class NeuralNetwork:
 
     def update_weights(self, learning_rate=0.001):
         """
-        Simple SGD weight update (can extend for other optimizers)
+         Update weights using the configured optimizer.        
+         
         """
-        for layer, gw, gb in zip(self.layers, self.grad_W, self.grad_b):
-            layer.W -= learning_rate * gw
-            layer.b -= learning_rate * gb
+        if learning_rate != self.learning_rate:
+            self.learning_rate = learning_rate
+            self.optimizer = self._build_optimizer()
+        self.optimizer.step(self.layers, self.grad_W, self.grad_b)
 
     def train(self, X_train, y_train, epochs=1, batch_size=32, learning_rate=0.001, X_val=None, y_val=None, wandb_log=True):
         """
