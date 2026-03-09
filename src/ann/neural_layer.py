@@ -5,6 +5,9 @@ Handles weight initialization, forward pass, and gradient computation
 
 import numpy as np
 from . import activations
+from src.ann.neural_layer import NeuralLayer
+
+__all__ = ["NeuralLayer"]
 
 
 class NeuralLayer:
