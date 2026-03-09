@@ -41,10 +41,10 @@ class NeuralNetwork:
         for num_neurons in self.num_neurons:
 
         # output layer (softmax for multi-class classification)
-        self.layers.append(
+           self.layers.append(
                 NeuralLayer(prev_size, num_neurons, activation=self.activation, weight_init=self.weight_init)
-            )
-        prev_size = num_neurons
+             )
+           prev_size = num_neurons
         
         self.layers.append(
             NeuralLayer(prev_size, self.output_size, activation='softmax', weight_init=self.weight_init)
