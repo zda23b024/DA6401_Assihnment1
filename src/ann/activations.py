@@ -4,7 +4,7 @@ Implements: ReLU, Sigmoid, Tanh, Softmax
 """
 
 import numpy as np
-
+from src.ann.activations import *  
 
 def sigmoid(x):
     """
