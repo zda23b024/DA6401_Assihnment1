@@ -7,6 +7,8 @@ import numpy as np
 from .neural_layer import NeuralLayer
 from . import activations
 
+from .neural_network import NeuralNetwork
+__all__ = ["NeuralNetwork"]
 
 class NeuralNetwork:
     """
