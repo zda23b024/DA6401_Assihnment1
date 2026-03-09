@@ -21,12 +21,21 @@ class NeuralNetwork:
         self.output_size = 10
         
         
-        self.num_neurons = getattr(cli_args, "num_neurons", [128, 128, 128, 64])
         if isinstance(self.num_neurons, int):
-            self.num_neurons = [self.num_neurons]
-            
-        self.hidden_layers = getattr(cli_args, "hidden_layers", len(self.num_neurons))
-        self.num_neurons = list(self.num_neurons[:self.hidden_layers])
+             if self.hidden_layers is None:
+                self.num_neurons = [self.num_neurons]
+                self.hidden_layers = 1
+            else:
+                self.num_neurons = [self.num_neurons] * self.hidden_layers
+        else:
+            self.num_neurons = list(self.num_neurons)
+            if self.hidden_layers is None:
+                self.hidden_layers = len(self.num_neurons)
+
+        if len(self.num_neurons) < self.hidden_layers:
+            self.num_neurons.extend([self.num_neurons[-1]] * (self.hidden_layers - len(self.num_neurons)))
+
+        self.num_neurons = self.num_neurons[:self.hidden_layers]
         self.activation = getattr(cli_args, "activation", "relu")
         self.weight_init = getattr(cli_args, "weight_init", "xavier")
 
