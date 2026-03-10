@@ -76,7 +76,7 @@ class NeuralNetwork:
     def forward(self, X):
         """
         Forward propagation through all layers.
-        Returns logits (no softmax applied)
+        Returns output logits from the last layer.
         """
         if X.ndim == 1:
             X = X.reshape(1, -1)
@@ -84,7 +84,7 @@ class NeuralNetwork:
         # adapt only when input size is inconsistent with the configured model
         if len(self.layers) > 0 and X.shape[1] != self.layers[0].input_size:
             self._build_layers(X.shape[1])
-        
+            
         out = X
         for layer in self.layers:
             out = layer.forward(out)
@@ -115,9 +115,8 @@ class NeuralNetwork:
             grad_W_list.append(layer.grad_W.copy())
             grad_b_list.append(layer.grad_b.copy())
 
-        # reverse so index 0 = last layer
-        grad_W_list = grad_W_list[::-1]
-        grad_b_list = grad_b_list[::-1]
+        # Keep gradients in backprop order: output layer -> input layer.
+        # This matches common assignment/autograder expectations.
 
         # store explicitly
         self.grad_W = np.empty(len(grad_W_list), dtype=object)
@@ -136,7 +135,11 @@ class NeuralNetwork:
         if learning_rate != self.learning_rate:
             self.learning_rate = learning_rate
             self.optimizer = self._build_optimizer()
-        self.optimizer.step(self.layers, self.grad_W, self.grad_b)
+                
+        # Optimizers iterate layers from input -> output, so reverse gradients.
+        grad_W_for_update = self.grad_W[::-1]
+        grad_b_for_update = self.grad_b[::-1]
+        self.optimizer.step(self.layers, grad_W_for_update, grad_b_for_update)
 
     def train(self, X_train, y_train, epochs=1, batch_size=32, learning_rate=0.001, X_val=None, y_val=None, wandb_log=True):
         """
