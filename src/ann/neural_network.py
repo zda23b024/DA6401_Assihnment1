@@ -4,6 +4,7 @@ Handles forward and backward propagation loops
 """
 
 import numpy as np
+import re
 from ann.neural_layer import NeuralLayer
 from ann import activations
 from ann.optimizers import SGD, Momentum, NAG, RMSProp, Adam, Nadam
