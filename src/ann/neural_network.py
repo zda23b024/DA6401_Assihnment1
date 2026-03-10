@@ -88,6 +88,9 @@ class NeuralNetwork:
         out = X
         for layer in self.layers:
             out = layer.forward(out)
+        # Keep internal softmax activations for backprop, but expose logits.
+        if len(self.layers) > 0 and self.layers[-1].activation_name == 'softmax':
+            return self.layers[-1].Z
         return out
 
     def backward(self, y_true, y_pred):
@@ -98,8 +101,13 @@ class NeuralNetwork:
         grad_W_list = []
         grad_b_list = []
 
-        # derivative of loss w.r.t logits (assuming cross-entropy with sigmoid/softmax)
-        dA = y_pred - y_true  # shape: (batch_size, num_classes)
+        # derivative of loss for output layer
+        if len(self.layers) > 0 and self.layers[-1].activation_name == 'softmax':
+            # `y_pred` are logits from forward(); convert to softmax probabilities.
+            probs = activations.softmax(y_pred)
+            dA = probs - y_true
+        else:
+            dA = y_pred - y_true  # shape: (batch_size, num_classes)
 
         # backprop through layers in reverse
         for layer in reversed(self.layers):
