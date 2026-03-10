@@ -186,10 +186,52 @@ class NeuralNetwork:
         """
         Load dictionary of weights
         """
-        for i, layer in enumerate(self.layers):
-            w_key = f"W{i}"
-            b_key = f"b{i}"
-            if w_key in weight_dict:
-                layer.W = weight_dict[w_key].copy()
-            if b_key in weight_dict:
-                layer.b = weight_dict[b_key].copy()
+        indexed_weights = []
+        for key, value in weight_dict.items():
+            match = re.fullmatch(r"W(\d+)", str(key))
+            if match:
+                idx = int(match.group(1))
+                b_key = f"b{idx}"
+                indexed_weights.append((idx, np.asarray(value), np.asarray(weight_dict.get(b_key, None))))
+
+        if not indexed_weights:
+            return
+
+        indexed_weights.sort(key=lambda x: x[0])
+        weights = [item[1] for item in indexed_weights]
+
+        # Detect whether incoming matrices follow (in, out) or (out, in)
+        in_out_chain = all(weights[i].shape[1] == weights[i + 1].shape[0] for i in range(len(weights) - 1))
+        out_in_chain = all(weights[i].shape[0] == weights[i + 1].shape[1] for i in range(len(weights) - 1))
+
+        transpose_on_load = False
+        if not in_out_chain and out_in_chain:
+            transpose_on_load = True
+
+        inferred_input = weights[0].shape[1] if transpose_on_load else weights[0].shape[0]
+        inferred_output = weights[-1].shape[0] if transpose_on_load else weights[-1].shape[1]
+        inferred_hidden = [w.shape[0] if transpose_on_load else w.shape[1] for w in weights[:-1]]
+
+        needs_rebuild = (
+            len(self.layers) != len(weights)
+            or any(layer.W.shape != (w.T.shape if transpose_on_load else w.shape) for layer, w in zip(self.layers, weights))
+        )
+
+        if needs_rebuild:
+            self.output_size = inferred_output
+            self.num_neurons = inferred_hidden
+            self._build_layers(inferred_input)
+
+        for layer, (_, W, b) in zip(self.layers, indexed_weights):
+            W_to_set = W.T if transpose_on_load else W
+            if layer.W.shape != W_to_set.shape:
+                raise ValueError(f"Weight shape mismatch for layer: expected {layer.W.shape}, got {W_to_set.shape}")
+            layer.W = W_to_set.copy()
+
+            if b is not None:
+                b = np.asarray(b)
+                if b.ndim == 1:
+                    b = b.reshape(1, -1)
+                if b.shape != layer.b.shape:
+                    raise ValueError(f"Bias shape mismatch for layer: expected {layer.b.shape}, got {b.shape}")
+                layer.b = b.copy()
