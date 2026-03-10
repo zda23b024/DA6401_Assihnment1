@@ -6,7 +6,6 @@ Handles forward and backward propagation loops
 import numpy as np
 import re
 from ann.neural_layer import NeuralLayer
-from ann import activations
 from ann.optimizers import SGD, Momentum, NAG, RMSProp, Adam, Nadam
 
 
@@ -76,7 +75,7 @@ class NeuralNetwork:
     def forward(self, X):
         """
         Forward propagation through all layers.
-        Returns output logits from the last layer.
+        RReturns output activations from the last layer
         """
         if X.ndim == 1:
             X = X.reshape(1, -1)
@@ -88,9 +87,6 @@ class NeuralNetwork:
         out = X
         for layer in self.layers:
             out = layer.forward(out)
-        # Keep internal softmax activations for backprop, but expose logits.
-        if len(self.layers) > 0 and self.layers[-1].activation_name == 'softmax':
-            return self.layers[-1].Z
         return out
 
     def backward(self, y_true, y_pred):
@@ -102,12 +98,7 @@ class NeuralNetwork:
         grad_b_list = []
 
         # derivative of loss for output layer
-        if len(self.layers) > 0 and self.layers[-1].activation_name == 'softmax':
-            # `y_pred` are logits from forward(); convert to softmax probabilities.
-            probs = activations.softmax(y_pred)
-            dA = probs - y_true
-        else:
-            dA = y_pred - y_true  # shape: (batch_size, num_classes)
+        dA = y_pred - y_true  # shape: (batch_size, num_classes)
 
         # backprop through layers in reverse
         for layer in reversed(self.layers):
